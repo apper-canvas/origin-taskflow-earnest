@@ -1,4 +1,3 @@
-import { forwardRef } from "react"
 import { motion } from "framer-motion"
 import { format, isToday, isPast, parseISO } from "date-fns"
 import ApperIcon from "@/components/ApperIcon"
@@ -6,7 +5,7 @@ import Badge from "@/components/atoms/Badge"
 import Button from "@/components/atoms/Button"
 import { useDemoCredentials } from "@/App"
 
-const TaskCard = forwardRef(({ task, onStatusChange, onEdit, onDelete, onArchive }, ref) => {
+const TaskCard = ({ task, onStatusChange, onEdit, onDelete, onArchive }) => {
   const { credentials, isEmbedded } = useDemoCredentials()
   const getPriorityColor = (priority) => {
     switch (priority) {
@@ -54,7 +53,6 @@ const TaskCard = forwardRef(({ task, onStatusChange, onEdit, onDelete, onArchive
 
 return (
     <motion.div
-      ref={ref}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
@@ -92,8 +90,7 @@ return (
             {task.description && (
               <p className="text-sm text-gray-600 mb-2">{task.description}</p>
             )}
-            <div className="flex items-center space-x-3">
-              {getStatusBadge(task.status)}
+<div className="flex items-center space-x-3">
               {getStatusBadge(task.status)}
               {task.dueDate && (
                 <span className={`text-xs px-2 py-1 rounded-full ${
@@ -141,9 +138,9 @@ return (
           </div>
         </div>
       </div>
-    </motion.div>
+</motion.div>
 )
-})
+}
 
 TaskCard.displayName = "TaskCard"
 
