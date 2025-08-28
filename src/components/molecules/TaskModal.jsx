@@ -6,8 +6,10 @@ import Label from "@/components/atoms/Label"
 import Button from "@/components/atoms/Button"
 import ApperIcon from "@/components/ApperIcon"
 import categoryService from "@/services/api/categoryService"
+import { useDemoCredentials } from "@/App"
 
 const TaskModal = ({ isOpen, onClose, onSave, task = null, mode = "create" }) => {
+  const { credentials, isEmbedded } = useDemoCredentials()
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -97,12 +99,19 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null, mode = "create" }) =>
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="bg-white rounded-xl shadow-2xl w-full max-w-md"
-          >
+>
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-display font-semibold text-gray-900">
-                  {mode === "edit" ? "Edit Task" : "Create New Task"}
-                </h2>
+                <div>
+                  <h2 className="text-xl font-display font-semibold text-gray-900">
+                    {mode === "edit" ? "Edit Task" : "Create New Task"}
+                  </h2>
+                  {isEmbedded && credentials?.user && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      Creating as: {credentials.user.name}
+                    </p>
+                  )}
+                </div>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -112,7 +121,6 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null, mode = "create" }) =>
                   <ApperIcon name="X" className="w-5 h-5" />
                 </Button>
               </div>
-
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <Label htmlFor="title" required>Task Title</Label>

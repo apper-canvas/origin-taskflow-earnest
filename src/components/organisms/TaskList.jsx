@@ -12,9 +12,11 @@ import Empty from "@/components/ui/Empty"
 import ApperIcon from "@/components/ApperIcon"
 import taskService from "@/services/api/taskService"
 import categoryService from "@/services/api/categoryService"
+import { useDemoCredentials } from "@/App"
 
 const TaskList = () => {
   const { categoryId } = useParams()
+  const { credentials, isEmbedded } = useDemoCredentials()
   const [tasks, setTasks] = useState([])
   const [filteredTasks, setFilteredTasks] = useState([])
   const [categories, setCategories] = useState([])
@@ -34,21 +36,44 @@ const TaskList = () => {
     filterAndSortTasks()
   }, [tasks, searchQuery, sortBy, filterStatus])
 
-  const loadTasks = async () => {
+const loadTasks = async () => {
     try {
       setError("")
       setLoading(true)
       let data
+      
+      // Add demo user context to task loading
       if (categoryId) {
         data = await taskService.getByCategory(categoryId)
       } else {
         data = await taskService.getAll()
         data = data.filter(task => !task.archived)
       }
+      
+      // Filter tasks by demo user in embedded mode
+      if (isEmbedded && credentials?.user?.id) {
+        data = data.filter(task => 
+          !task.demoUserId || task.demoUserId === credentials.user.id
+        )
+      }
+      
       setTasks(data)
     } catch (error) {
       console.error("Failed to load tasks:", error)
       setError("Failed to load tasks")
+      
+      // Notify parent of error in embedded mode
+      if (isEmbedded && window.parent) {
+        try {
+          window.parent.postMessage({
+            type: 'TASKFLOW_ERROR',
+            error: error.message,
+            timestamp: Date.now()
+          }, '*')
+        } catch (postError) {
+          console.warn("Failed to notify parent of error:", postError)
+        }
+      }
     } finally {
       setLoading(false)
     }
@@ -121,18 +146,41 @@ const TaskList = () => {
     }
   }
 
-  const handleSaveTask = async (taskData) => {
+const handleSaveTask = async (taskData) => {
     try {
+      // Add demo user context to task data in embedded mode
+      const enrichedTaskData = {
+        ...taskData,
+        ...(isEmbedded && credentials?.user?.id && {
+          demoUserId: credentials.user.id,
+          createdBy: credentials.user.name
+        })
+      }
+      
       if (modalState.mode === "edit") {
-        const updatedTask = await taskService.update(modalState.task.Id, taskData)
+        const updatedTask = await taskService.update(modalState.task.Id, enrichedTaskData)
         setTasks(prev => prev.map(task => 
           task.Id === modalState.task.Id ? updatedTask : task
         ))
         toast.success("Task updated successfully")
       } else {
-        const newTask = await taskService.create(taskData)
+        const newTask = await taskService.create(enrichedTaskData)
         setTasks(prev => [newTask, ...prev])
         toast.success("Task created successfully")
+        
+        // Notify parent of new task in embedded mode
+        if (isEmbedded && window.parent) {
+          try {
+            window.parent.postMessage({
+              type: 'TASKFLOW_TASK_CREATED',
+              task: newTask,
+              user: credentials?.user,
+              timestamp: Date.now()
+            }, '*')
+          } catch (postError) {
+            console.warn("Failed to notify parent of task creation:", postError)
+          }
+        }
       }
     } catch (error) {
       console.error("Failed to save task:", error)

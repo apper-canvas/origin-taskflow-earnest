@@ -3,8 +3,10 @@ import { format, isToday, isPast, parseISO } from "date-fns"
 import ApperIcon from "@/components/ApperIcon"
 import Badge from "@/components/atoms/Badge"
 import Button from "@/components/atoms/Button"
+import { useDemoCredentials } from "@/App"
 
 const TaskCard = ({ task, onStatusChange, onEdit, onDelete, onArchive }) => {
+  const { credentials, isEmbedded } = useDemoCredentials()
   const getPriorityColor = (priority) => {
     switch (priority) {
       case "high": return "bg-error"
@@ -72,17 +74,24 @@ const TaskCard = ({ task, onStatusChange, onEdit, onDelete, onArchive }) => {
               <ApperIcon name="Check" className="w-3 h-3 text-white" />
             )}
           </motion.button>
-
-          <div className="flex-1">
-            <h3 className={`font-medium text-gray-900 mb-1 ${
-              task.status === "completed" ? "line-through text-gray-500" : ""
-            }`}>
-              {task.title}
-            </h3>
+<div className="flex-1">
+            <div className="flex items-center space-x-2 mb-1">
+              <h3 className={`font-medium text-gray-900 ${
+                task.status === "completed" ? "line-through text-gray-500" : ""
+              }`}>
+                {task.title}
+              </h3>
+              {isEmbedded && task.createdBy && (
+                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                  {task.createdBy}
+                </span>
+              )}
+            </div>
             {task.description && (
               <p className="text-sm text-gray-600 mb-2">{task.description}</p>
             )}
             <div className="flex items-center space-x-3">
+              {getStatusBadge(task.status)}
               {getStatusBadge(task.status)}
               {task.dueDate && (
                 <span className={`text-xs px-2 py-1 rounded-full ${
