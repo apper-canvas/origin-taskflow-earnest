@@ -103,8 +103,7 @@ setFormData({
                 <div>
 <h2 className="text-xl font-display font-semibold text-gray-900">
                     {mode === "edit" ? "Edit Task" : "Create New Task"}
-                  </h2>
-                  }
+                </h2>
                 </div>
                 <Button
                   variant="ghost"
