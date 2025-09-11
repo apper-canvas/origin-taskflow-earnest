@@ -101,10 +101,10 @@ setFormData({
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-xl font-display font-semibold text-gray-900">
+<h2 className="text-xl font-display font-semibold text-gray-900">
                     {mode === "edit" ? "Edit Task" : "Create New Task"}
                   </h2>
-                  )}
+                  }
                 </div>
                 <Button
                   variant="ghost"
