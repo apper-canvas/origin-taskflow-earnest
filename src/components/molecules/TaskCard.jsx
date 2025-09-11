@@ -4,10 +4,10 @@ import { format, isToday, isPast, parseISO } from "date-fns"
 import ApperIcon from "@/components/ApperIcon"
 import Badge from "@/components/atoms/Badge"
 import Button from "@/components/atoms/Button"
-import { useDemoCredentials } from "@/App"
+import { useSelector } from 'react-redux'
 
 const TaskCard = React.forwardRef(({ task, onStatusChange, onEdit, onDelete, onArchive }, ref) => {
-  const { credentials, isEmbedded } = useDemoCredentials()
+const { user } = useSelector((state) => state.user)
   const getPriorityColor = (priority) => {
     switch (priority) {
       case "high": return "bg-error"
@@ -83,7 +83,7 @@ return (
               }`}>
                 {task.title}
               </h3>
-              {isEmbedded && task.createdBy && (
+{task.createdBy && (
                 <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                   {task.createdBy}
                 </span>

@@ -1,22 +1,22 @@
-import { useState, useEffect } from "react"
-import { useParams } from "react-router-dom"
-import { motion, AnimatePresence } from "framer-motion"
-import { toast } from "react-toastify"
-import TaskCard from "@/components/molecules/TaskCard"
-import SearchBar from "@/components/molecules/SearchBar"
-import TaskModal from "@/components/molecules/TaskModal"
-import Button from "@/components/atoms/Button"
-import Loading from "@/components/ui/Loading"
-import Error from "@/components/ui/Error"
-import Empty from "@/components/ui/Empty"
-import ApperIcon from "@/components/ApperIcon"
-import taskService from "@/services/api/taskService"
-import categoryService from "@/services/api/categoryService"
-import { useDemoCredentials } from "@/App"
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
+import categoryService from "@/services/api/categoryService";
+import taskService from "@/services/api/taskService";
+import ApperIcon from "@/components/ApperIcon";
+import TaskCard from "@/components/molecules/TaskCard";
+import SearchBar from "@/components/molecules/SearchBar";
+import TaskModal from "@/components/molecules/TaskModal";
+import Button from "@/components/atoms/Button";
+import Empty from "@/components/ui/Empty";
+import Loading from "@/components/ui/Loading";
+import Error from "@/components/ui/Error";
 
 const TaskList = () => {
   const { categoryId } = useParams()
-  const { credentials, isEmbedded } = useDemoCredentials()
+const { user } = useSelector((state) => state.user)
   const [tasks, setTasks] = useState([])
   const [filteredTasks, setFilteredTasks] = useState([])
   const [categories, setCategories] = useState([])
@@ -42,19 +42,11 @@ const loadTasks = async () => {
       setLoading(true)
       let data
       
-      // Add demo user context to task loading
-      if (categoryId) {
+if (categoryId) {
         data = await taskService.getByCategory(categoryId)
       } else {
         data = await taskService.getAll()
         data = data.filter(task => !task.archived)
-      }
-      
-      // Filter tasks by demo user in embedded mode
-      if (isEmbedded && credentials?.user?.id) {
-        data = data.filter(task => 
-          !task.demoUserId || task.demoUserId === credentials.user.id
-        )
       }
       
       setTasks(data)
@@ -63,18 +55,7 @@ const loadTasks = async () => {
       setError("Failed to load tasks")
       
       // Notify parent of error in embedded mode
-      if (isEmbedded && window.parent) {
-        try {
-          window.parent.postMessage({
-            type: 'TASKFLOW_ERROR',
-            error: error.message,
-            timestamp: Date.now()
-          }, '*')
-        } catch (postError) {
-          console.warn("Failed to notify parent of error:", postError)
-        }
-      }
-    } finally {
+} finally {
       setLoading(false)
     }
   }
@@ -88,17 +69,16 @@ const loadTasks = async () => {
     }
   }
 
-  const filterAndSortTasks = () => {
+const filterAndSortTasks = () => {
     let filtered = [...tasks]
 
     // Filter by search query
     if (searchQuery.trim()) {
       filtered = filtered.filter(task =>
-        task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        task.description.toLowerCase().includes(searchQuery.toLowerCase())
+        task.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.description?.toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
-
     // Filter by status
     if (filterStatus !== "all") {
       filtered = filtered.filter(task => task.status === filterStatus)
@@ -148,38 +128,24 @@ const loadTasks = async () => {
 
 const handleSaveTask = async (taskData) => {
     try {
-      // Add demo user context to task data in embedded mode
-      const enrichedTaskData = {
+const enrichedTaskData = {
         ...taskData,
-        ...(isEmbedded && credentials?.user?.id && {
-          demoUserId: credentials.user.id,
-          createdBy: credentials.user.name
-        })
+        createdBy: user?.firstName ? `${user.firstName} ${user.lastName}` : user?.emailAddress || ''
       }
-      
-      if (modalState.mode === "edit") {
+
+      if (modalState.task) {
         const updatedTask = await taskService.update(modalState.task.Id, enrichedTaskData)
-        setTasks(prev => prev.map(task => 
-          task.Id === modalState.task.Id ? updatedTask : task
-        ))
-        toast.success("Task updated successfully")
+        if (updatedTask) {
+          setTasks(prev => prev.map(task => 
+            task.Id === modalState.task.Id ? updatedTask : task
+          ))
+          toast.success("Task updated successfully")
+        }
       } else {
         const newTask = await taskService.create(enrichedTaskData)
-        setTasks(prev => [newTask, ...prev])
-        toast.success("Task created successfully")
-        
-        // Notify parent of new task in embedded mode
-        if (isEmbedded && window.parent) {
-          try {
-            window.parent.postMessage({
-              type: 'TASKFLOW_TASK_CREATED',
-              task: newTask,
-              user: credentials?.user,
-              timestamp: Date.now()
-            }, '*')
-          } catch (postError) {
-            console.warn("Failed to notify parent of task creation:", postError)
-          }
+        if (newTask) {
+          setTasks(prev => [newTask, ...prev])
+          toast.success("Task created successfully")
         }
       }
     } catch (error) {

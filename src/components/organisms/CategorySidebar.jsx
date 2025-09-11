@@ -25,10 +25,10 @@ const CategorySidebar = () => {
       
       // Add "All Tasks" category
       const allTasksCategory = {
-        Id: "all",
+Id: "all",
         name: "All Tasks",
         color: "#6B7280",
-        taskCount: data.reduce((sum, cat) => sum + cat.taskCount, 0)
+        taskCount: data.reduce((sum, cat) => sum + (cat.taskCount || 0), 0)
       }
       
       setCategories([allTasksCategory, ...data])

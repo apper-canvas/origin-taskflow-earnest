@@ -10,10 +10,10 @@ import { useDemoCredentials } from "@/App"
 
 const TaskModal = ({ isOpen, onClose, onSave, task = null, mode = "create" }) => {
   const { credentials, isEmbedded } = useDemoCredentials()
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     title: "",
     description: "",
-    categoryId: "1",
+    categoryId: "1", 
     priority: "medium",
     status: "pending",
     dueDate: ""
@@ -25,11 +25,11 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null, mode = "create" }) =>
     if (isOpen) {
       loadCategories()
       if (task && mode === "edit") {
-        setFormData({
+setFormData({
           title: task.title || "",
           description: task.description || "",
           categoryId: task.categoryId || "1",
-          priority: task.priority || "medium",
+          priority: task.priority || "medium", 
           status: task.status || "pending",
           dueDate: task.dueDate ? format(new Date(task.dueDate), "yyyy-MM-dd") : ""
         })
@@ -154,7 +154,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null, mode = "create" }) =>
                       onChange={(e) => handleChange("categoryId", e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                     >
-                      {categories.map(category => (
+{categories.map(category => (
                         <option key={category.Id} value={category.Id.toString()}>
                           {category.name}
                         </option>
