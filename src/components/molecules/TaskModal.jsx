@@ -6,10 +6,8 @@ import Label from "@/components/atoms/Label"
 import Button from "@/components/atoms/Button"
 import ApperIcon from "@/components/ApperIcon"
 import categoryService from "@/services/api/categoryService"
-import { useDemoCredentials } from "@/App"
 
 const TaskModal = ({ isOpen, onClose, onSave, task = null, mode = "create" }) => {
-  const { credentials, isEmbedded } = useDemoCredentials()
 const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -106,10 +104,6 @@ setFormData({
                   <h2 className="text-xl font-display font-semibold text-gray-900">
                     {mode === "edit" ? "Edit Task" : "Create New Task"}
                   </h2>
-                  {isEmbedded && credentials?.user && (
-                    <p className="text-sm text-gray-500 mt-1">
-                      Creating as: {credentials.user.name}
-                    </p>
                   )}
                 </div>
                 <Button
